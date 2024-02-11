@@ -1,61 +1,46 @@
-// Import the necessary libraries
-const axios = require('axios');
-const dotenv = require('dotenv');
-const _ = require('lodash');
+document.addEventListener('DOMContentLoaded', () => {
+  const searchButton = document.getElementById('search-button');
+  const resultsContainer = document.getElementById('results-container');
 
-// Load environment variables from a .env file
-dotenv.config();
+  searchButton.addEventListener('click', async () => {
+    const categoryInput = document.getElementById('category-input');
+    const category = categoryInput.value;
+    
+    resultsContainer.innerHTML = '';
 
-// Function to search books by category
-async function searchBooks(category) {
-  try {
-    const response = await axios.get(`https://openlibrary.org/subjects/${category}.json`);
-    const data = response.data;
+    try {
+      const response = await axios.get(`https://openlibrary.org/subjects/${category}.json`);
+      const data = response.data;
 
-    const books = data.works.map(work => ({
-      title: work.title,
-      authors: work.authors,
-    }));
+      const books = data.works.map(work => ({
+        key: work.key,
+        title: work.title,
+        authors: work.authors,
+      }));
 
-    return books;
-  } catch (error) {
-    console.error('Error searching books:', error.message);
-    return [];
-  }
-}
+      for (const book of books) {
+        const bookElement = document.createElement('div');
+        const titleElement = document.createElement('h3');
+        const authorsElement = document.createElement('p');
 
-// Function to get book description by key
-async function getBookDescription(key) {
-  try {
-    const response = await axios.get(`https://openlibrary.org${key}.json`);
-    const data = response.data;
+        titleElement.textContent = book.title;
+        authorsElement.textContent = `Authors: ${book.authors.join(', ')}`;
 
-    return data.description;
-  } catch (error) {
-    console.error('Error getting book description:', error.message);
-    return '';
-  }
-}
+        bookElement.appendChild(titleElement);
+        bookElement.appendChild(authorsElement);
+        resultsContainer.appendChild(bookElement);
 
-// Example usage
-const category = 'fantasy';
-searchBooks(category)
-  .then(books => {
-    for (const book of books) {
-      console.log('Title:', book.title);
-      console.log('Authors:', book.authors.join(', '));
-      console.log();
+        bookElement.addEventListener('click', async () => {
+          const descriptionResponse = await axios.get(`https://openlibrary.org${book.key}.json`);
+          const descriptionData = descriptionResponse.data;
+          
+          const description = descriptionData.description || 'No description available';
+
+          alert(description);
+        });
+      }
+    } catch (error) {
+      console.error('Error searching books:', error.message);
     }
-  })
-  .catch(error => {
-    console.error('Error searching books:', error.message);
   });
-
-const bookKey = '/works/OL8193508W';
-getBookDescription(bookKey)
-  .then(description => {
-    console.log('Description:', description);
-  })
-  .catch(error => {
-    console.error('Error getting book description:', error.message);
-  });
+});
