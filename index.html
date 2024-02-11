@@ -3,19 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Open Library App</title>
+  <title>Book Search</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Open Library App</h1>
-    <input type="text" id="categoryInput" placeholder="Inserisci la categoria">
-    <button id="searchButton">Cerca</button>
-
-    <div id="resultsContainer"></div>
-    <div id="descriptionContainer"></div>
+  <div id="app">
+    <h1>Book Search</h1>
+    <div class="search-container">
+      <input type="text" id="category-input" placeholder="Enter a category">
+      <button id="search-button">Search</button>
+    </div>
+    <div id="results-container"></div>
   </div>
-
-  <script src="main.js"></script>
+  <script src="main.js" defer></script>
 </body>
 </html>
