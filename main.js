@@ -1,53 +1,61 @@
-const searchButton = document.getElementById('searchButton');
-const categoryInput = document.getElementById('categoryInput');
-const resultsContainer = document.getElementById('resultsContainer');
-const descriptionContainer = document.getElementById('descriptionContainer');
+// Import the necessary libraries
+const axios = require('axios');
+const dotenv = require('dotenv');
+const _ = require('lodash');
 
-searchButton.addEventListener('click', searchBooks);
+// Load environment variables from a .env file
+dotenv.config();
 
-async function searchBooks() {
-  const category = categoryInput.value;
-  const url = `https://openlibrary.org/subjects/${category}.json`;
-
+// Function to search books by category
+async function searchBooks(category) {
   try {
-    const response = await fetch(url);
-    const data = await response.json();
-    const works = data.works;
+    const response = await axios.get(`https://openlibrary.org/subjects/${category}.json`);
+    const data = response.data;
 
-    resultsContainer.innerHTML = '';
+    const books = data.works.map(work => ({
+      title: work.title,
+      authors: work.authors,
+    }));
 
-    works.forEach((work) => {
-      const title = work.title;
-      const authors = work.authors.map((author) => author.name).join(', ');
-
-      const bookElement = document.createElement('div');
-      bookElement.innerHTML = `<h3>${title}</h3><p>${authors}</p>`;
-      bookElement.addEventListener('click', () => {
-        getBookDescription(work.key);
-      });
-
-      resultsContainer.appendChild(bookElement);
-    });
+    return books;
   } catch (error) {
-    console.log(error);
+    console.error('Error searching books:', error.message);
+    return [];
   }
 }
 
+// Function to get book description by key
 async function getBookDescription(key) {
-  const url = `https://openlibrary.org${key}.json`;
-
   try {
-    const response = await fetch(url);
-    const data = await response.json();
-    const description = data.description;
+    const response = await axios.get(`https://openlibrary.org${key}.json`);
+    const data = response.data;
 
-    descriptionContainer.innerHTML = '';
-
-    const descriptionElement = document.createElement('div');
-    descriptionElement.innerHTML = `<p>${description}</p>`;
-
-    descriptionContainer.appendChild(descriptionElement);
+    return data.description;
   } catch (error) {
-    console.log(error);
+    console.error('Error getting book description:', error.message);
+    return '';
   }
 }
+
+// Example usage
+const category = 'fantasy';
+searchBooks(category)
+  .then(books => {
+    for (const book of books) {
+      console.log('Title:', book.title);
+      console.log('Authors:', book.authors.join(', '));
+      console.log();
+    }
+  })
+  .catch(error => {
+    console.error('Error searching books:', error.message);
+  });
+
+const bookKey = '/works/OL8193508W';
+getBookDescription(bookKey)
+  .then(description => {
+    console.log('Description:', description);
+  })
+  .catch(error => {
+    console.error('Error getting book description:', error.message);
+  });
